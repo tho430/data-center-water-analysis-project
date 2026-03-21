@@ -27,9 +27,8 @@ plt.bar(df["year"], df["replenishment_percent"])
 plt.title("Water Replenishment Percentage Over Time")
 plt.xlabel("Year")
 plt.ylabel("Replenishment (%)")
-plt.show()
 plt.savefig("plots/q2_bar.png")
-
+plt.clf()
 
 print("\nSummary:")
 print(
