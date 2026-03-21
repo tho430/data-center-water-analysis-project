@@ -22,6 +22,15 @@ plt.ylabel("Billion Gallons")
 plt.savefig("plots/q1_line.png")
 plt.clf()
 
+plt.figure(figsize=(8,5))
+plt.bar(df["year"], df["replenishment_percent"])
+plt.title("Water Replenishment Percentage Over Time")
+plt.xlabel("Year")
+plt.ylabel("Replenishment (%)")
+plt.show()
+plt.savefig("plots/q2_bar.png")
+
+
 print("\nSummary:")
 print(
     f"- Water use: {df.iloc[0]['water_consumption_billion_gallons']} -> "
