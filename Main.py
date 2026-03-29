@@ -39,3 +39,31 @@ print(
     f"- Replenishment: {df.iloc[0]['replenishment_percent']}% -> "
     f"{df.iloc[-1]['replenishment_percent']}%"
 )
+
+corr = df[["water_consumption_billion_gallons", "replenishment_percent"]].corr()
+print(corr)
+
+plt.imshow(corr, cmap='coolwarm', interpolation='none')
+plt.colorbar()
+plt.xticks([0,1], corr.columns)
+plt.yticks([0,1], corr.columns)
+plt.title("Correlation Matrix")
+plt.clf()
+
+plt.scatter(df["water_consumption_billion_gallons"], df["replenishment_percent"])
+plt.title("Water Consumption vs Replenishment Percentage")
+plt.xlabel("Water Consumption (Billions of Gallons)")
+plt.ylabel("Replenishment (%)")
+plt.savefig("plots/Consumption_VS_Replenishment_Percentage.png")
+plt.show()
+plt.clf()
+
+plt.plot(df["year"], df["water_consumption_billion_gallons"], label="Water Consumption")
+plt.plot(df["year"], df["replenishment_percent"], label="Replenishment %")
+plt.title("Water Consumption vs Replenishment Over Time")
+plt.xlabel("Year")
+plt.ylabel("Values")
+plt.savefig("plots/Consumption_VS_Replenishment_Time.png")
+plt.legend()
+ply.show()
+plt.clf()
