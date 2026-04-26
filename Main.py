@@ -44,7 +44,7 @@ def load_water_usage_data() -> pd.DataFrame:
             with open(path, "r", encoding="utf-8") as file:
                 raw_text = file.read().strip()
             df = parse_malformed_csv(raw_text)
-            if not df.empty:
+            if set(EXPECTED_COLUMNS).issubset(df.columns) and not df.empty:
                 return normalize_dataframe(df)
         except Exception as exc:
             last_error = exc
@@ -178,7 +178,92 @@ def main() -> None:
     print("\nCorrelation matrix:\n", corr)
 
     save_plots(df)
+    run_predictive_analysis(df)
 
+def run_predictive_analysis(df: pd.DataFrame) -> None:
+    try:
+        from sklearn.model_selection import train_test_split
+        from sklearn.linear_model import LinearRegression, Ridge
+        from sklearn.metrics import mean_squared_error
+        import numpy as np
+    except ModuleNotFoundError:
+        print("\nPredictive analysis skipped: scikit-learn is not installed.")
+        return
+
+    print("\nPredictive Analysis Questions:")
+    print("1. Can water consumption predict replenishment percentage?")
+    print("2. How does Ridge regularization affect model performance?")
+
+    model_df = df.dropna(
+        subset=["water_consumption_billion_gallons", "replenishment_percent"]
+    )
+
+    X = model_df[["water_consumption_billion_gallons"]]
+    y = model_df["replenishment_percent"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
+
+    # Linear Regression
+    reg = LinearRegression()
+    reg.fit(X_train, y_train)
+    y_pred = reg.predict(X_test)
+
+    r2 = reg.score(X_test, y_test)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+    print("\nLinear Regression Results:")
+    print("R² Score:", r2)
+    print("RMSE:", rmse)
+
+    # Ridge Regression
+    alphas = [0.1, 1.0, 10.0, 100.0]
+    ridge_scores = []
+
+    for alpha in alphas:
+        ridge = Ridge(alpha=alpha)
+        ridge.fit(X_train, y_train)
+        ridge_scores.append(ridge.score(X_test, y_test))
+
+    print("\nRidge Regression Scores:")
+    for alpha, score in zip(alphas, ridge_scores):
+        print(f"Alpha {alpha}: {score}")
+
+    if plt is not None:
+        os.makedirs("plots", exist_ok=True)
+
+        # Regression line plot
+        plt.figure(figsize=(8, 5))
+        plt.scatter(X, y, label="Actual Data")
+        plt.plot(X, reg.predict(X), color="red", label="Linear Regression")
+        plt.title("Predicting Replenishment from Water Consumption")
+        plt.xlabel("Water Consumption (Billion Gallons)")
+        plt.ylabel("Replenishment (%)")
+        plt.legend()
+        plt.savefig("plots/regression_plot.png")
+        plt.close()
+
+        # Ridge performance plot
+        plt.figure(figsize=(8, 5))
+        plt.plot(alphas, ridge_scores, marker="o")
+        plt.title("Ridge Regression Performance")
+        plt.xlabel("Alpha Regularization Strength")
+        plt.ylabel("R² Score")
+        plt.savefig("plots/regression_performance_plot.png")
+        plt.close()
+
+    print("\nPredictive Analysis Summary:")
+    print(
+        "- Linear regression was used to test whether water consumption could predict "
+        "replenishment percentage."
+    )
+    print(
+        "- Ridge regression was used to evaluate how regularization affects model performance."
+    )
+    print(
+        "- Because the dataset is small, results should be interpreted cautiously."
+    )
 
 if __name__ == "__main__":
     main()
